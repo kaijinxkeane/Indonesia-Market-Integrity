@@ -1,0 +1,12 @@
+streamlit
+pandas
+numpy
+pyarrow
+yfinance
+stadata
+python-dotenv
+requests
+plotly
+scikit-learn
+lightgbm
+shap
