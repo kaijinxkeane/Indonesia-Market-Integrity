@@ -25,6 +25,7 @@ jobs:
       - name: Run data pipeline
         env:
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
+          COMTRADE_API_KEY: ${{ secrets.COMTRADE_API_KEY }}
         run: python -m src.data.pipeline
 
       - name: Commit processed data

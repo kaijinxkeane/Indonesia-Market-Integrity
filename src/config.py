@@ -31,6 +31,7 @@ def get_secret(key: str, default: str | None = None) -> str | None:
 
 
 EODHD_API_KEY = get_secret("EODHD_API_KEY")
+COMTRADE_API_KEY = get_secret("COMTRADE_API_KEY")
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 RAW_DATA_DIR = ROOT_DIR / "data" / "raw"

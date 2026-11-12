@@ -45,9 +45,8 @@ Start with free sources; upgrade to a paid price API only if yfinance proves unr
 | Financial statements | IDX filings (XBRL, annual reports) | Download, PDF extraction | Free |
 | Manipulation sanctions | OJK announcements (ojk.go.id) | Manual, hand-coded | Free |
 | Market classification events | MSCI announcements (msci.com) | Manual, hand-coded | Free |
-| Macro (GDP, inflation) | [IMF IFS](https://data.imf.org/) (IMF Data API) | Python, no key | Free |
-| Macro cross-check (GDP, inflation) | [World Bank Open Data API](https://data.worldbank.org/) | Python, no key | Free |
-| Trade balance (confounder) | [UN Comtrade](https://comtradeplus.un.org/) | Python, no key | Free |
+| Macro (GDP, inflation) | [World Bank Open Data API](https://data.worldbank.org/) | Python, no key | Free |
+| Trade balance (confounder) | [UN Comtrade](https://comtradeplus.un.org/) | Free API key (ComtradePlus) | Free |
 | Rates, rupiah, portfolio flows | Bank Indonesia SEKI | Download | Free |
 
 Keep API keys in environment variables or Streamlit secrets, never in the GitHub repo.
@@ -90,7 +89,8 @@ The biggest risk is that manipulated prices contaminate the data the models lear
 | Trade balance self-reported, same manipulation-independence concern as other BPS series | Use UN Comtrade instead, which mirrors each flow against partner-country reports |
 | yfinance outages or gaps | Cache data locally; EODHD as fallback |
 | Defamation risk from naming firms | Show flagged stocks as statistical outliers, with clear wording that this is not an accusation |
-| Macro figures could be politically influenced at the national-reporting level | Use IMF IFS as primary (no BPS API dependency) with World Bank Open Data as cross-check; use macro series as control variables only, not causal drivers |
+| Macro figures could be politically influenced at the national-reporting level | Use World Bank Open Data (IMF SDDS-reviewed, no BPS/IMF API dependency); use macro series as control variables only, not causal drivers |
+| BPS and IMF's legacy free macro APIs both turned out to require registration/approval (BPS blocked outright, IMF's free SDMX API was retired) | World Bank Open Data API confirmed working with zero registration — sole macro source for now |
 
 ## Timeline and milestones
 

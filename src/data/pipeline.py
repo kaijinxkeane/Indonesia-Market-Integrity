@@ -9,8 +9,9 @@ Run manually with: python -m src.data.pipeline
 """
 
 import pandas as pd
+import requests
 
-from src.config import MANUAL_DATA_DIR, PROCESSED_DATA_DIR
+from src.config import COMTRADE_API_KEY, MANUAL_DATA_DIR, PROCESSED_DATA_DIR  # noqa: F401
 
 
 def fetch_prices(tickers: list[str]) -> pd.DataFrame:
@@ -22,26 +23,20 @@ def fetch_prices(tickers: list[str]) -> pd.DataFrame:
 
 
 def fetch_macro() -> pd.DataFrame:
-    """Pull macro series (GDP, inflation) for Indonesia from IMF IFS
-    (International Financial Statistics), via the IMF Data API.
+    """Pull macro series (GDP, inflation) for Indonesia from the World Bank
+    Open Data API.
 
-    No key needed. Chosen as primary over BPS WebAPI: no application/
-    approval step, and monthly CPI / quarterly GDP match BPS's own
-    frequency.
+    No key needed. Chosen over BPS WebAPI (blocked, 3-subject limit) and
+    IMF IFS (its free SDMX JSON API was retired; the replacement requires
+    a portal account) — World Bank is the only option that's actually
+    registration-free and confirmed working.
 
-    TODO: implement via the IMF Data API (data.imf.org), dataset IFS.
-    """
-    raise NotImplementedError
+    Verified manually:
+    https://api.worldbank.org/v2/country/IDN/indicator/FP.CPI.TOTL.ZG?format=json&date=2015:2027&per_page=1000
+    returns real data with no auth.
 
-
-def fetch_macro_crosscheck() -> pd.DataFrame:
-    """Pull the same GDP/inflation series from the World Bank Open Data API
-    (no key needed) as an independent check on the IMF IFS figures, since
-    both ultimately draw on national submissions and could diverge.
-
-    TODO: implement (e.g. via the `wbgapi` package or raw HTTP calls to
-    https://api.worldbank.org/v2/). Flag divergence from fetch_macro()
-    rather than trusting either source blindly.
+    TODO: implement via requests, country=IDN, indicators FP.CPI.TOTL.ZG
+    (inflation) and NY.GDP.MKTP.KD.ZG (GDP growth).
     """
     raise NotImplementedError
 
@@ -53,8 +48,9 @@ def fetch_trade_balance() -> pd.DataFrame:
     against partner-country reports, so it's not just BPS's own number
     re-hosted — a genuine independence check, not a redundant one.
 
-    TODO: implement via the UN Comtrade API (comtradeplus.un.org). No key
-    needed for basic access.
+    TODO: implement via the UN Comtrade (ComtradePlus) API using
+    COMTRADE_API_KEY from src.config — free, but requires registering for
+    a key at comtradeplus.un.org, unlike the IMF/World Bank sources above.
     """
     raise NotImplementedError
 
@@ -74,7 +70,6 @@ def load_manual_tables() -> dict[str, pd.DataFrame]:
 def clean_and_merge(
     prices: pd.DataFrame,
     macro: pd.DataFrame,
-    macro_crosscheck: pd.DataFrame,
     trade_balance: pd.DataFrame,
     manual: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
@@ -82,9 +77,7 @@ def clean_and_merge(
 
     TODO: this is the core data cleaning/processing logic — flags for free
     float < 15% / insider ownership >= 95%, anomaly features, event
-    timeline join, etc. See ProjectBrief.md methodology section. Also
-    compare macro vs. macro_crosscheck and flag/log any large divergence
-    before using the macro series as a control variable.
+    timeline join, etc. See ProjectBrief.md methodology section.
     """
     raise NotImplementedError
 
@@ -96,10 +89,9 @@ def main() -> None:
 
     prices = fetch_prices(tickers)
     macro = fetch_macro()
-    macro_crosscheck = fetch_macro_crosscheck()
     trade_balance = fetch_trade_balance()
     manual = load_manual_tables()
-    merged = clean_and_merge(prices, macro, macro_crosscheck, trade_balance, manual)
+    merged = clean_and_merge(prices, macro, trade_balance, manual)
 
     merged.to_parquet(PROCESSED_DATA_DIR / "merged.parquet", index=False)
 
