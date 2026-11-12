@@ -45,7 +45,7 @@ Start with free sources; upgrade to a paid price API only if yfinance proves unr
 | Financial statements | IDX filings (XBRL, annual reports) | Download, PDF extraction | Free |
 | Manipulation sanctions | OJK announcements (ojk.go.id) | Manual, hand-coded | Free |
 | Market classification events | MSCI announcements (msci.com) | Manual, hand-coded | Free |
-| Macro (GDP, inflation) | [BPS WebAPI](https://pypi.org/project/stadata/0.1.1) | Free API key (2 subjects: PDB, IHK) | Free |
+| Macro (GDP, inflation) | [IMF IFS](https://data.imf.org/) (IMF Data API) | Python, no key | Free |
 | Macro cross-check (GDP, inflation) | [World Bank Open Data API](https://data.worldbank.org/) | Python, no key | Free |
 | Trade balance (confounder) | [UN Comtrade](https://comtradeplus.un.org/) | Python, no key | Free |
 | Rates, rupiah, portfolio flows | Bank Indonesia SEKI | Download | Free |
@@ -90,7 +90,7 @@ The biggest risk is that manipulated prices contaminate the data the models lear
 | Trade balance self-reported, same manipulation-independence concern as other BPS series | Use UN Comtrade instead, which mirrors each flow against partner-country reports |
 | yfinance outages or gaps | Cache data locally; EODHD as fallback |
 | Defamation risk from naming firms | Show flagged stocks as statistical outliers, with clear wording that this is not an accusation |
-| BPS macro figures politically influenced | Cross-check against World Bank Open Data (IMF SDDS-reviewed); use macro series as control variables only, not causal drivers |
+| Macro figures could be politically influenced at the national-reporting level | Use IMF IFS as primary (no BPS API dependency) with World Bank Open Data as cross-check; use macro series as control variables only, not causal drivers |
 
 ## Timeline and milestones
 

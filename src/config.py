@@ -30,7 +30,6 @@ def get_secret(key: str, default: str | None = None) -> str | None:
         return default
 
 
-BPS_API_KEY = get_secret("BPS_API_KEY")
 EODHD_API_KEY = get_secret("EODHD_API_KEY")
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

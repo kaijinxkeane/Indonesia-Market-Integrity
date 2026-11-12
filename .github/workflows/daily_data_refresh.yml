@@ -24,7 +24,6 @@ jobs:
 
       - name: Run data pipeline
         env:
-          BPS_API_KEY: ${{ secrets.BPS_API_KEY }}
           EODHD_API_KEY: ${{ secrets.EODHD_API_KEY }}
         run: python -m src.data.pipeline
 

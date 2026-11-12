@@ -10,7 +10,7 @@ Run manually with: python -m src.data.pipeline
 
 import pandas as pd
 
-from src.config import MANUAL_DATA_DIR, PROCESSED_DATA_DIR, BPS_API_KEY  # noqa: F401
+from src.config import MANUAL_DATA_DIR, PROCESSED_DATA_DIR
 
 
 def fetch_prices(tickers: list[str]) -> pd.DataFrame:
@@ -22,17 +22,22 @@ def fetch_prices(tickers: list[str]) -> pd.DataFrame:
 
 
 def fetch_macro() -> pd.DataFrame:
-    """Pull macro series (GDP, inflation) from the BPS WebAPI.
+    """Pull macro series (GDP, inflation) for Indonesia from IMF IFS
+    (International Financial Statistics), via the IMF Data API.
 
-    TODO: implement using BPS_API_KEY from src.config.
+    No key needed. Chosen as primary over BPS WebAPI: no application/
+    approval step, and monthly CPI / quarterly GDP match BPS's own
+    frequency.
+
+    TODO: implement via the IMF Data API (data.imf.org), dataset IFS.
     """
     raise NotImplementedError
 
 
 def fetch_macro_crosscheck() -> pd.DataFrame:
     """Pull the same GDP/inflation series from the World Bank Open Data API
-    (no key needed) as an independent check on BPS figures, since BPS is a
-    government agency and its numbers could be politically influenced.
+    (no key needed) as an independent check on the IMF IFS figures, since
+    both ultimately draw on national submissions and could diverge.
 
     TODO: implement (e.g. via the `wbgapi` package or raw HTTP calls to
     https://api.worldbank.org/v2/). Flag divergence from fetch_macro()
