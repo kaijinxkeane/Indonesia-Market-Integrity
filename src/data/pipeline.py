@@ -10,35 +10,43 @@ Run manually with: python -m src.data.pipeline
 
 import pandas as pd
 import requests
+import yfinance as yf
 
 from src.config import COMTRADE_API_KEY, MANUAL_DATA_DIR, PROCESSED_DATA_DIR  # noqa: F401
 
 
 def fetch_prices(tickers: list[str]) -> pd.DataFrame:
-    """Pull daily OHLCV from yfinance for the given '.JK' tickers.
-
-    TODO: implement with yfinance. No API key needed.
-    """
-    raise NotImplementedError
+    raw = yf.download(tickers, start="2023-01-01", auto_adjust=False)
+    df = raw.stack(level=1, future_stack=True)
+    df = df.rename_axis(index=["date", "ticker"]).reset_index()
+    df.columns = [str(c).lower() for c in df.columns]
+    return df
 
 
 def fetch_macro() -> pd.DataFrame:
-    """Pull macro series (GDP, inflation) for Indonesia from the World Bank
-    Open Data API.
+    URL = "https://api.worldbank.org/v2/country/IDN/indicator/FP.CPI.TOTL.ZG?format=json&date=2015:2027&per_page=1000"
+    request = requests.get(URL)
+    if request.status_code != 200:
+        raise RuntimeError(f"World Bank API returned {request.status_code} for inflation")
+    data = request.json()
+    if len(data) <= 1 or not isinstance(data[1], list):
+        raise ValueError("Unexpected data format from World Bank API.")
+    df = pd.DataFrame(data[1])
+    df = df[['date', 'value']]
+    df.rename(columns={'date': 'year', 'value': 'inflation'}, inplace=True)
 
-    No key needed. Chosen over BPS WebAPI (blocked, 3-subject limit) and
-    IMF IFS (its free SDMX JSON API was retired; the replacement requires
-    a portal account) — World Bank is the only option that's actually
-    registration-free and confirmed working.
+    URL2 = "https://api.worldbank.org/v2/country/IDN/indicator/NY.GDP.MKTP.KD.ZG?format=json&date=2015:2027&per_page=1000"
+    request2 = requests.get(URL2)
+    if request2.status_code != 200:
+        raise RuntimeError(f"World Bank API returned {request2.status_code} for GDP growth")
+    data2 = request2.json()
+    if len(data2) <= 1 or not isinstance(data2[1], list):
+        raise ValueError("Unexpected data format from World Bank API.")
+    df2 = pd.DataFrame(data2[1])
+    df2 = df2[['date', 'value']]
+    df2.rename(columns={'date': 'year', 'value': 'gdp_growth'}, inplace=True)
 
-    Verified manually:
-    https://api.worldbank.org/v2/country/IDN/indicator/FP.CPI.TOTL.ZG?format=json&date=2015:2027&per_page=1000
-    returns real data with no auth.
-
-    TODO: implement via requests, country=IDN, indicators FP.CPI.TOTL.ZG
-    (inflation) and NY.GDP.MKTP.KD.ZG (GDP growth).
-    """
-    raise NotImplementedError
+    return df.merge(df2, on='year')
 
 
 def fetch_trade_balance() -> pd.DataFrame:
@@ -85,7 +93,23 @@ def clean_and_merge(
 def main() -> None:
     PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    tickers: list[str] = []  # TODO: fill in IDX tickers of interest
+    tickers: list[str] = [
+        "BBCA.JK",  # Bank Central Asia
+        "BBRI.JK",  # Bank Rakyat Indonesia
+        "BMRI.JK",  # Bank Mandiri
+        "BBNI.JK",  # Bank Negara Indonesia
+        "TLKM.JK",  # Telkom Indonesia
+        "ASII.JK",  # Astra International
+        "UNVR.JK",  # Unilever Indonesia
+        "ICBP.JK",  # Indofood CBP
+        "ADRO.JK",  # Adaro Energy
+        "PGAS.JK",  # Perusahaan Gas Negara
+        "PTBA.JK",  # Bukit Asam (coal)
+        "ANTM.JK",  # Aneka Tambang (mining)
+        "INCO.JK",  # Vale Indonesia (nickel)
+        "GOTO.JK",  # GoTo (tech/e-commerce)
+        "MDKA.JK",  # Merdeka Copper Gold
+    ]  # TODO: refine into free-float / MSCI-constituent groups once manual tables exist
 
     prices = fetch_prices(tickers)
     macro = fetch_macro()
